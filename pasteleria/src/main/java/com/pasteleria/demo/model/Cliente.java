@@ -1,28 +1,47 @@
 package com.pasteleria.demo.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "clientes")
 public class Cliente {
-    private int id;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 80)
     private String nombre;
+
+    @Column(nullable = false, length = 80)
     private String apellido;
+
+    @Column(nullable = false, length = 20)
     private String telefono;
+
+    @Column(nullable = false, unique = true, length = 120)
     private String correo;
 
     public Cliente() {
     }
 
-    public Cliente(int id, String nombre, String apellido, String telefono, String correo) {
-        this.id = id;
+    public Cliente(String nombre, String apellido, String telefono, String correo) {
         this.nombre = nombre;
         this.apellido = apellido;
         this.telefono = telefono;
         this.correo = correo;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
