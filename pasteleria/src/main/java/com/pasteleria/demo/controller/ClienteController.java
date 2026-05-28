@@ -22,12 +22,22 @@ public class ClienteController {
     }
 
     @GetMapping("/{id}")
-    public Cliente obtener(@PathVariable int id) {
+    public Cliente obtener(@PathVariable Long id) {
         return clienteService.obtenerPorId(id);
     }
 
     @PostMapping
     public Cliente guardar(@RequestBody Cliente cliente) {
         return clienteService.guardar(cliente);
+    }
+
+    @GetMapping("/correo")
+    public Cliente buscarPorCorreo(@RequestParam String correo) {
+        return clienteService.buscarPorCorreo(correo);
+    }
+
+    @GetMapping("/apellido/{apellido}")
+    public List<Cliente> buscarPorApellido(@PathVariable String apellido) {
+        return clienteService.buscarPorApellido(apellido);
     }
 }

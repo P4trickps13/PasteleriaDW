@@ -1,34 +1,47 @@
 package com.pasteleria.demo.service;
 
-import com.pasteleria.demo.model.Pedido;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.pasteleria.demo.model.Pedido;
+import com.pasteleria.demo.repository.PedidoRepository;
 
 @Service
 public class PedidoService {
 
-    private List<Pedido> lista = new ArrayList<>();
+    private final PedidoRepository pedidoRepository;
 
-    public PedidoService() {
-        lista.add(new Pedido(1, "Patrick Perez", "Torta de Chocolate", 1, 45.0, "Pendiente"));
-        lista.add(new Pedido(2, "Lucia Torres", "Cupcake de Vainilla", 6, 51.0, "Confirmado"));
+    public PedidoService(PedidoRepository pedidoRepository) {
+        this.pedidoRepository = pedidoRepository;
     }
 
     public List<Pedido> listar() {
-        return lista;
+        return pedidoRepository.findAll();
     }
 
-    public Pedido obtenerPorId(int id) {
-        return lista.stream()
-                .filter(p -> p.getId() == id)
-                .findFirst()
-                .orElse(null);
+    public Pedido obtenerPorId(Long id) {
+        return pedidoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado con ID: " + id));
     }
 
     public Pedido guardar(Pedido pedido) {
-        lista.add(pedido);
-        return pedido;
+        return pedidoRepository.save(pedido);
+    }
+
+    public List<Pedido> buscarPorEstado(String estado) {
+        return pedidoRepository.findByEstado(estado);
+    }
+
+    public List<Pedido> buscarPorCliente(String cliente) {
+        return pedidoRepository.buscarPorCliente(cliente);
+    }
+
+    @Transactional
+    public Pedido cambiarEstado(Long id, String nuevoEstado) {
+        Pedido pedido = obtenerPorId(id);
+        pedido.setEstado(nuevoEstado);
+        return pedidoRepository.save(pedido);
     }
 }

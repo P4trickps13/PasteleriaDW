@@ -1,34 +1,77 @@
 package com.pasteleria.demo.service;
 
-import com.pasteleria.demo.model.Producto;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.pasteleria.demo.model.Producto;
+import com.pasteleria.demo.repository.ProductoRepository;
 
 @Service
 public class ProductoService {
 
-    private List<Producto> lista = new ArrayList<>();
+    private final ProductoRepository productoRepository;
 
-    public ProductoService() {
-        lista.add(new Producto(1, "Torta de Chocolate", "Tortas", 45.0, 10));
-        lista.add(new Producto(2, "Cupcake de Vainilla", "Cupcakes", 8.5, 20));
+    public ProductoService(ProductoRepository productoRepository) {
+        this.productoRepository = productoRepository;
     }
 
     public List<Producto> listar() {
-        return lista;
+        return productoRepository.findAll();
     }
 
-    public Producto obtenerPorId(int id) {
-        return lista.stream()
-                .filter(p -> p.getId() == id)
-                .findFirst()
-                .orElse(null);
+    public Producto obtenerPorId(Long id) {
+        return productoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + id));
     }
 
     public Producto guardar(Producto producto) {
-        lista.add(producto);
-        return producto;
+        return productoRepository.save(producto);
+    }
+
+    public List<Producto> buscarPorCategoria(String categoria) {
+        return productoRepository.findByCategoria(categoria);
+    }
+
+    public List<Producto> buscarPorPrecioMayorA(double precio) {
+        return productoRepository.findByPrecioGreaterThan(precio);
+    }
+
+    public List<Producto> buscarPorStockMayorA(int stock) {
+        return productoRepository.findByStockGreaterThan(stock);
+    }
+
+    public List<Producto> buscarPorTexto(String texto) {
+        return productoRepository.buscarPorNombreContiene(texto);
+    }
+
+    @Transactional
+    public Producto actualizarPrecio(Long id, double nuevoPrecio) {
+        Producto producto = obtenerPorId(id);
+        producto.setPrecio(nuevoPrecio);
+        return productoRepository.save(producto);
+    }
+
+    @Transactional
+    public void descontarStock(Long id, int cantidad) {
+        Producto producto = obtenerPorId(id);
+
+        if (cantidad <= 0) {
+            throw new RuntimeException("La cantidad debe ser mayor que cero");
+        }
+
+        if (producto.getStock() < cantidad) {
+            throw new RuntimeException("Stock insuficiente");
+        }
+
+        producto.setStock(producto.getStock() - cantidad);
+        productoRepository.save(producto);
+    }
+
+    @Transactional
+    public void eliminar(Long id) {
+        Producto producto = obtenerPorId(id);
+        productoRepository.delete(producto);
     }
 }

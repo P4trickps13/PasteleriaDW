@@ -22,12 +22,27 @@ public class PedidoController {
     }
 
     @GetMapping("/{id}")
-    public Pedido obtener(@PathVariable int id) {
+    public Pedido obtener(@PathVariable Long id) {
         return pedidoService.obtenerPorId(id);
     }
 
     @PostMapping
     public Pedido guardar(@RequestBody Pedido pedido) {
         return pedidoService.guardar(pedido);
+    }
+
+    @GetMapping("/estado/{estado}")
+    public List<Pedido> buscarPorEstado(@PathVariable String estado) {
+        return pedidoService.buscarPorEstado(estado);
+    }
+
+    @GetMapping("/cliente")
+    public List<Pedido> buscarPorCliente(@RequestParam String nombre) {
+        return pedidoService.buscarPorCliente(nombre);
+    }
+
+    @PutMapping("/{id}/estado")
+    public Pedido cambiarEstado(@PathVariable Long id, @RequestParam String nuevoEstado) {
+        return pedidoService.cambiarEstado(id, nuevoEstado);
     }
 }
