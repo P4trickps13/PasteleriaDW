@@ -1,0 +1,43 @@
+services:
+
+  mysql:
+    image: mysql:8
+    container_name: pasteleria_mysql
+    environment:
+      MYSQL_DATABASE: pasteleria
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin123
+      MYSQL_ROOT_PASSWORD: root123
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+
+  backend:
+    build:
+      context: ./backend
+    container_name: pasteleria_backend
+    depends_on:
+      - mysql
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/pasteleria
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin123
+
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: pasteleria_frontend
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+
+volumes:
+
+  mysql_data:
