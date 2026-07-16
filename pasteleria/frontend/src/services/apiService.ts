@@ -1,4 +1,8 @@
-const API_BASE_URL = '/api';
+const API_BASE_URL =
+  `${import.meta.env.VITE_API_URL || ''}/api`;
+
+console.log("API URL usada:", API_BASE_URL);
+console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
