@@ -1,0 +1,43 @@
+# ======================
+# BACKUP BASE DE DATOS
+# ======================
+backup_pasteleria.sql
+
+
+# ======================
+# SPRING BOOT / JAVA
+# ======================
+backend/target/
+*.class
+*.jar
+*.log
+
+
+# ======================
+# NODE / FRONTEND
+# ======================
+frontend/node_modules/
+frontend/dist/
+frontend/out/
+
+
+# ======================
+# VARIABLES DE ENTORNO
+# ======================
+.env
+frontend/.env
+backend/.env
+
+
+# ======================
+# IDE
+# ======================
+.vscode/
+.idea/
+
+
+# ======================
+# SISTEMA
+# ======================
+.DS_Store
+Thumbs.db

@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+const API_BASE_URL = `${import.meta.env.VITE_API_URL || ''}/api`;
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -11,16 +11,19 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
   if (!response.ok) {
     let detail = '';
+
     try {
       detail = await response.text();
     } catch {
       detail = '';
     }
+
     throw new Error(detail || `Error HTTP ${response.status}`);
   }
 
   return response.json();
 }
+
 
 export interface Producto {
   id: number;
@@ -29,6 +32,7 @@ export interface Producto {
   precio: number;
   stock: number;
 }
+
 
 export interface HeroSlide {
   id: number;
@@ -40,6 +44,7 @@ export interface HeroSlide {
   sortOrder: number;
 }
 
+
 export interface GalleryItem {
   id: number;
   title: string;
@@ -50,6 +55,7 @@ export interface GalleryItem {
   active: boolean;
   sortOrder: number;
 }
+
 
 export interface Benefit {
   id: number;
@@ -63,6 +69,7 @@ export interface Benefit {
   sortOrder: number;
 }
 
+
 export interface BusinessHour {
   id: number;
   dayIndex: number;
@@ -72,6 +79,7 @@ export interface BusinessHour {
   closed: boolean;
   active: boolean;
 }
+
 
 export interface Testimonial {
   id: number;
@@ -83,6 +91,7 @@ export interface Testimonial {
   active: boolean;
   sortOrder: number;
 }
+
 
 export interface PedidoPayload {
   cliente: string;
@@ -97,6 +106,7 @@ export interface PedidoPayload {
   estado: string;
 }
 
+
 export interface EncargoPayload {
   nombre: string;
   email: string;
@@ -109,29 +119,36 @@ export interface EncargoPayload {
   estado: string;
 }
 
+
 export function obtenerProductos() {
   return request<Producto[]>('/productos');
 }
+
 
 export function obtenerHeroSlides() {
   return request<HeroSlide[]>('/hero-slides');
 }
 
+
 export function obtenerGaleria() {
   return request<GalleryItem[]>('/gallery-items');
 }
+
 
 export function obtenerBeneficios() {
   return request<Benefit[]>('/benefits');
 }
 
+
 export function obtenerHorarios() {
   return request<BusinessHour[]>('/business-hours');
 }
 
+
 export function obtenerTestimonios() {
   return request<Testimonial[]>('/testimonials');
 }
+
 
 export function registrarPedido(payload: PedidoPayload) {
   return request<{ id: number }>('/pedidos', {
@@ -140,12 +157,14 @@ export function registrarPedido(payload: PedidoPayload) {
   });
 }
 
+
 export function registrarEncargo(payload: EncargoPayload) {
   return request<{ id: number }>('/encargos', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
 }
+
 
 export function registrarNewsletter(email: string) {
   return request<{ id: number }>('/newsletter', {
