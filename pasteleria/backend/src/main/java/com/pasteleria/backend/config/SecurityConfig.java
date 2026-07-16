@@ -1,6 +1,5 @@
 package com.pasteleria.backend.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -34,7 +33,6 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -44,12 +42,8 @@ import java.util.List;
 public class SecurityConfig {
 
 
-    @Value("${app.jwt.secret}")
-    private String jwtSecret;
-
-
-    @Value("${app.cors.allowed-origins:http://localhost:3000}")
-    private String allowedOrigins;
+    private final String jwtSecret =
+            "EsteEsUnSecretoLocalSoloParaDesarrolloPasteleria1234567890";
 
 
 
@@ -62,7 +56,9 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
 
             .sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                session.sessionCreationPolicy(
+                    SessionCreationPolicy.STATELESS
+                )
             )
 
 
@@ -93,7 +89,7 @@ public class SecurityConfig {
 
 
 
-                // Acciones públicas del cliente
+                // Acciones clientes
                 .requestMatchers(
                     HttpMethod.POST,
                     "/api/pedidos",
@@ -120,22 +116,26 @@ public class SecurityConfig {
             )
 
 
+
             .oauth2ResourceServer(oauth2 ->
-                oauth2
-                    .jwt(jwt ->
-                        jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())
+                oauth2.jwt(jwt ->
+                    jwt.jwtAuthenticationConverter(
+                        jwtAuthenticationConverter()
                     )
+                )
             )
 
 
+
             .headers(headers ->
-                headers.frameOptions(frame -> frame.disable())
+                headers.frameOptions(frame ->
+                    frame.disable()
+                )
             );
 
 
         return http.build();
     }
-
 
 
 
@@ -149,14 +149,14 @@ public class SecurityConfig {
 
 
 
-        List<String> origins =
-                Arrays.stream(allowedOrigins.split(","))
-                .map(String::trim)
-                .toList();
+        configuration.setAllowedOrigins(
+            List.of(
+                "http://localhost:5173",
+                "http://localhost:3000",
+                "https://pasteleria-dw.vercel.app"
+            )
+        );
 
-
-
-        configuration.setAllowedOrigins(origins);
 
 
         configuration.setAllowedMethods(
@@ -171,6 +171,7 @@ public class SecurityConfig {
         );
 
 
+
         configuration.setAllowedHeaders(
             List.of(
                 "Authorization",
@@ -178,6 +179,7 @@ public class SecurityConfig {
                 "Accept"
             )
         );
+
 
 
         configuration.setAllowCredentials(true);
@@ -191,10 +193,12 @@ public class SecurityConfig {
                 new UrlBasedCorsConfigurationSource();
 
 
+
         source.registerCorsConfiguration(
             "/**",
             configuration
         );
+
 
 
         return source;
@@ -231,6 +235,7 @@ public class SecurityConfig {
 
 
         return new ProviderManager(provider);
+
     }
 
 
@@ -283,6 +288,7 @@ public class SecurityConfig {
                 new JwtGrantedAuthoritiesConverter();
 
 
+
         converter.setAuthoritiesClaimName("roles");
 
 
@@ -292,6 +298,7 @@ public class SecurityConfig {
 
         JwtAuthenticationConverter authenticationConverter =
                 new JwtAuthenticationConverter();
+
 
 
         authenticationConverter
