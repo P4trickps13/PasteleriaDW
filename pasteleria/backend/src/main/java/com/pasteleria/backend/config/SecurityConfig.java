@@ -24,73 +24,283 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
+
     @Value("${app.jwt.secret}")
     private String jwtSecret;
 
+
+    @Value("${app.cors.allowed-origins:http://localhost:3000}")
+    private String allowedOrigins;
+
+
+
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/publico/**", "/h2-console/**").permitAll()
-                        .requestMatchers("/api/**").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated())
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))
-                .httpBasic(Customizer.withDefaults())
-                .headers(headers -> headers.frameOptions(frame -> frame.disable()));
+            .cors(Customizer.withDefaults())
+
+            .csrf(csrf -> csrf.disable())
+
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+
+
+            .authorizeHttpRequests(auth -> auth
+
+
+                // Rutas públicas
+                .requestMatchers(
+                    "/auth/**",
+                    "/publico/**",
+                    "/h2-console/**"
+                )
+                .permitAll()
+
+
+
+                // Catálogo público
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/productos/**",
+                    "/api/hero-slides/**",
+                    "/api/gallery-items/**",
+                    "/api/benefits/**",
+                    "/api/business-hours/**",
+                    "/api/testimonials/**"
+                )
+                .permitAll()
+
+
+
+                // Acciones públicas del cliente
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/api/pedidos",
+                    "/api/encargos",
+                    "/api/newsletter"
+                )
+                .permitAll()
+
+
+
+                // Administración
+                .requestMatchers(
+                    "/admin/**",
+                    "/api/productos/**",
+                    "/api/pedidos/**",
+                    "/api/clientes/**"
+                )
+                .hasAuthority("ADMIN")
+
+
+
+                .anyRequest()
+                .authenticated()
+            )
+
+
+            .oauth2ResourceServer(oauth2 ->
+                oauth2
+                    .jwt(jwt ->
+                        jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())
+                    )
+            )
+
+
+            .headers(headers ->
+                headers.frameOptions(frame -> frame.disable())
+            );
+
 
         return http.build();
     }
 
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+
+
+
 
     @Bean
-    AuthenticationManager authenticationManager(UserDetailsService userDetailsService,
+    CorsConfigurationSource corsConfigurationSource() {
+
+
+        CorsConfiguration configuration =
+                new CorsConfiguration();
+
+
+
+        List<String> origins =
+                Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .toList();
+
+
+
+        configuration.setAllowedOrigins(origins);
+
+
+        configuration.setAllowedMethods(
+            List.of(
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE",
+                "OPTIONS"
+            )
+        );
+
+
+        configuration.setAllowedHeaders(
+            List.of(
+                "Authorization",
+                "Content-Type",
+                "Accept"
+            )
+        );
+
+
+        configuration.setAllowCredentials(true);
+
+
+        configuration.setMaxAge(3600L);
+
+
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+
+        source.registerCorsConfiguration(
+            "/**",
+            configuration
+        );
+
+
+        return source;
+    }
+
+
+
+
+
+    @Bean
+    PasswordEncoder passwordEncoder() {
+
+        return new BCryptPasswordEncoder();
+
+    }
+
+
+
+
+
+    @Bean
+    AuthenticationManager authenticationManager(
+            UserDetailsService userDetailsService,
             PasswordEncoder passwordEncoder) {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+
+
+        DaoAuthenticationProvider provider =
+                new DaoAuthenticationProvider(
+                    userDetailsService
+                );
+
+
         provider.setPasswordEncoder(passwordEncoder);
+
+
         return new ProviderManager(provider);
     }
 
+
+
+
+
     @Bean
     JwtEncoder jwtEncoder() {
-        return new NimbusJwtEncoder(new ImmutableSecret<>(jwtSecret.getBytes(StandardCharsets.UTF_8)));
+
+
+        return new NimbusJwtEncoder(
+            new ImmutableSecret<>(
+                jwtSecret.getBytes(StandardCharsets.UTF_8)
+            )
+        );
+
     }
+
+
+
+
 
     @Bean
     JwtDecoder jwtDecoder() {
-        SecretKey key = new SecretKeySpec(jwtSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-        return NimbusJwtDecoder.withSecretKey(key)
+
+
+        SecretKey key =
+            new SecretKeySpec(
+                jwtSecret.getBytes(StandardCharsets.UTF_8),
+                "HmacSHA256"
+            );
+
+
+        return NimbusJwtDecoder
+                .withSecretKey(key)
                 .macAlgorithm(MacAlgorithm.HS256)
                 .build();
+
     }
+
+
+
+
 
     @Bean
     JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        grantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
-        grantedAuthoritiesConverter.setAuthorityPrefix("");
 
-        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
 
-        return jwtAuthenticationConverter;
+        JwtGrantedAuthoritiesConverter converter =
+                new JwtGrantedAuthoritiesConverter();
+
+
+        converter.setAuthoritiesClaimName("roles");
+
+
+        converter.setAuthorityPrefix("");
+
+
+
+        JwtAuthenticationConverter authenticationConverter =
+                new JwtAuthenticationConverter();
+
+
+        authenticationConverter
+            .setJwtGrantedAuthoritiesConverter(converter);
+
+
+
+        return authenticationConverter;
+
     }
+
 }

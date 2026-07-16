@@ -2,7 +2,7 @@ package com.pasteleria.backend.controller;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,7 +13,7 @@ import com.pasteleria.backend.model.HeroSlide;
 import com.pasteleria.backend.repository.HeroSlideRepository;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
+
 @RequestMapping("/api/hero-slides")
 public class HeroSlideController {
     private final HeroSlideRepository repository;
